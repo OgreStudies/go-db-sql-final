@@ -54,11 +54,7 @@ func TestAddGetDelete(t *testing.T) {
 	// проверьте, что значения всех полей в полученном объекте совпадают со значениями полей в переменной parcel
 	reqParsel, err := store.Get(parcel.Number)
 	require.Empty(t, err)
-	assert.Equal(t, parcel.Number, reqParsel.Number)
-	assert.Equal(t, parcel.Client, reqParsel.Client)
-	assert.Equal(t, parcel.Address, reqParsel.Address)
-	assert.Equal(t, parcel.Status, reqParsel.Status)
-	assert.Equal(t, parcel.CreatedAt, reqParsel.CreatedAt)
+	assert.Equal(t, parcel, reqParsel)
 
 	// delete
 	// удалите добавленную посылку, убедитесь в отсутствии ошибки
@@ -67,7 +63,7 @@ func TestAddGetDelete(t *testing.T) {
 	require.Empty(t, err)
 
 	_, err = store.Get(reqParsel.Number)
-	require.NotEmpty(t, err)
+	require.ErrorIs(t, err, sql.ErrNoRows)
 }
 
 // TestSetAddress проверяет обновление адреса
@@ -182,10 +178,6 @@ func TestGetByClient(t *testing.T) {
 		require.True(t, ok)
 
 		// убедитесь, что значения полей полученных посылок заполнены верно
-		assert.Equal(t, testParsel.Number, parcel.Number)
-		assert.Equal(t, testParsel.Client, parcel.Client)
-		assert.Equal(t, testParsel.Address, parcel.Address)
-		assert.Equal(t, testParsel.Status, parcel.Status)
-		assert.Equal(t, testParsel.CreatedAt, parcel.CreatedAt)
+		assert.Equal(t, testParsel, parcel)
 	}
 }

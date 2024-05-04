@@ -22,14 +22,12 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
 		sql.Named("created_at", p.CreatedAt),
 	)
 	if err != nil {
-		werr := fmt.Errorf("ошибка добавления посылки. ошибка: %w", err)
-		return 0, werr
+		return 0, fmt.Errorf("ошибка добавления посылки. ошибка: %w", err)
 	}
 	// возвращаем идентификатор последней добавленной записи
 	insId, err := res.LastInsertId()
 	if err != nil {
-		werr := fmt.Errorf("ошибка чтения идентификатора добавленной посылки. ошибка: %w", err)
-		return int(insId), werr
+		return int(insId), fmt.Errorf("ошибка чтения идентификатора добавленной посылки. ошибка: %w", err)
 	}
 
 	return int(insId), nil
@@ -43,8 +41,7 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 	p := Parcel{}
 	err := pRow.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
 	if err != nil {
-		werr := fmt.Errorf("ошибка при чтении посылки по номеру %d. ошибка: %w", number, err)
-		return p, werr
+		return p, fmt.Errorf("ошибка при чтении посылки по номеру %d. ошибка: %w", number, err)
 	}
 
 	return p, nil
@@ -53,31 +50,25 @@ func (s ParcelStore) Get(number int) (Parcel, error) {
 func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	// чтение строк из таблицы parcel по заданному client
 	// из таблицы может вернуться несколько строк
-	pRows, err := s.db.Query("SELECT * FROM parcel WHERE client = :client", sql.Named("client", client))
-
-	// заполняем срез Parcel данными из таблицы
 	var res []Parcel
-
+	pRows, err := s.db.Query("SELECT * FROM parcel WHERE client = :client", sql.Named("client", client))
 	if err != nil {
-		werr := fmt.Errorf("ошибка при чтении посылок клиента %d. ошибка: %w", client, err)
-		return res, werr
+		return res, fmt.Errorf("ошибка при чтении посылок клиента %d. ошибка: %w", client, err)
 	}
 	defer pRows.Close()
-
+	// заполняем срез Parcel данными из таблицы
 	for pRows.Next() {
 		var parcel Parcel
 
 		err := pRows.Scan(&parcel.Number, &parcel.Client, &parcel.Status, &parcel.Address, &parcel.CreatedAt)
 		if err != nil {
-			werr := fmt.Errorf("ошибка при чтении посылок клиента %d. ошибка: %w", client, err)
-			return res, werr
+			return res, fmt.Errorf("ошибка при чтении посылок клиента %d. ошибка: %w", client, err)
 		}
 		res = append(res, parcel)
 	}
 
 	if err := pRows.Err(); err != nil {
-		werr := fmt.Errorf("ошибка при чтении посылок клиента %d. ошибка: %w", client, err)
-		return res, werr
+		return res, fmt.Errorf("ошибка при чтении посылок клиента %d. ошибка: %w", client, err)
 	}
 
 	return res, nil
